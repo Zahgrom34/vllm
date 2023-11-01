@@ -644,9 +644,8 @@ class LLMEngine:
                         f"Swapped: {len(self.scheduler.swapped)} reqs, "
                         f"Pending: {len(self.scheduler.waiting)} reqs, "
                         f"GPU KV cache usage: {gpu_cache_usage * 100:.1f}%, "
-                        f"CPU KV cache usage: {cpu_cache_usage * 100:.1f}%, "
-                        f"logging took: {time.monotonic() - now}")
-        self.last_logging_time = now
+                        f"CPU KV cache usage: {cpu_cache_usage * 100:.1f}%,")
+            self.last_logging_time = now
 
     def _decode_sequence(self, seq: Sequence,
                          sampling_params: SamplingParams) -> None:
