@@ -31,7 +31,8 @@ COPY setup.py setup.py
 COPY README.md README.md
 RUN pip install -r requirements.txt
 RUN pip install accelerate fschat
+RUN pip install aioprometheus
 COPY vllm vllm
 COPY --from=build /workspace/vllm/*.so /workspace/vllm/
 
-ENTRYPOINT ["python", "-u", "-m", "vllm.entrypoints.api_server"]
+ENTRYPOINT ["python", "-u", "-m", "vllm.entrypoints.openai.api_server"]
