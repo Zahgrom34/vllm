@@ -1,7 +1,9 @@
 import io
 import os
+import platform
 import re
 import subprocess
+import sys
 from typing import List, Set
 import warnings
 
@@ -9,7 +11,7 @@ from packaging.version import parse, Version
 import setuptools
 import torch
 
-BUILD_CPU_ONLY = os.getenv('VLLM_BUILD_CPU_ONLY', "0") == "1"
+BUILD_CPU_ONLY = os.getenv('VLLM_BUILD_CPU_ONLY', "0") == "1" or sys.platform == 'darwin'
 
 if not BUILD_CPU_ONLY:
     from torch.utils.cpp_extension import BuildExtension, CUDAExtension, CUDA_HOME, ROCM_HOME
@@ -231,13 +233,23 @@ elif _is_hip():
 # Setup CPU Operations
 BUILD_CPU_OPS = (os.getenv('VLLM_BUILD_CPU_OPS', "0") == "1" or BUILD_CPU_ONLY)
 CPU_OPS_SOURCES = []
+LIBS = []
 if BUILD_CPU_OPS:
     if BUILD_CPU_ONLY:
         CXX_FLAGS += ["-DVLLM_BUILD_CPU_ONLY"]
-    CXX_FLAGS += [
-        "-DVLLM_BUILD_CPU_OPS", "-Xclang", "-fopenmp", "-mavx512f", "-mavx512bf16",
-        "-mavx512vl"
-    ]
+    if sys.platform == 'darwin':
+        CXX_FLAGS += ["-Xclang", "-fopenmp"]
+        LIBS += ["omp"]
+    else:
+        CXX_FLAGS += ["-fopenmp"]
+    if platform.processor() == 'arm':
+        CXX_FLAGS += [
+            "-DVLLM_BUILD_CPU_OPS", "-march=armv8.6-a+bf16"
+        ]
+    else:
+        CXX_FLAGS += [
+            "-DVLLM_BUILD_CPU_OPS", "-mavx512f", "-mavx512bf16", "-mavx512vl"
+        ]
     CPU_OPS_SOURCES += [
         "csrc/cpu/activation_impl.cpp",
         "csrc/cpu/attention_impl.cpp",
@@ -282,6 +294,7 @@ else:
         extra_compile_args={
             "cxx": CXX_FLAGS,
         },
+        libraries=LIBS
     )
 ext_modules.append(vllm_extension)
 
