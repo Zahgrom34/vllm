@@ -51,6 +51,16 @@ inline torch::Tensor awq_gemm_cpu(torch::Tensor _in_feats, torch::Tensor _kernel
   TORCH_CHECK(false, "Quantization is not supported on CPU.");
 }
 
+inline torch::Tensor gptq_gemm_cpu(torch::Tensor a, torch::Tensor b_q_weight,
+                         torch::Tensor b_gptq_qzeros, torch::Tensor b_gptq_scales,
+                         torch::Tensor b_g_idx, bool use_exllama) {
+  TORCH_CHECK(false, "Quantization is not supported on CPU.");
+}
+
+inline torch::Tensor gptq_shuffle_cpu(torch::Tensor q_weight, torch::Tensor q_perm) {
+  TORCH_CHECK(false, "Quantization is not supported on CPU.");
+}
+
 inline void squeezellm_gemm_cpu(torch::Tensor vec, torch::Tensor mat,
                          torch::Tensor mul, torch::Tensor lookup_table) {
   TORCH_CHECK(false, "Quantization is not supported on CPU.");

@@ -116,6 +116,10 @@ class EngineArgs:
             'The "auto" option will use FP16 precision '
             'for FP32 and FP16 models, and BF16 precision '
             'for BF16 models.')
+        parser.add_argument('--device',
+                            type=str,
+                            default='cuda',
+                            help='torch device to use. can be cpu or cuda.')
         parser.add_argument('--max-model-len',
                             type=int,
                             default=None,
@@ -216,13 +220,12 @@ class EngineArgs:
     def create_engine_configs(
         self,
     ) -> Tuple[ModelConfig, CacheConfig, ParallelConfig, SchedulerConfig]:
-        model_config = ModelConfig(self.model, self.tokenizer,
-                                   self.tokenizer_mode, self.trust_remote_code,
-                                   self.download_dir, self.load_format,
-                                   self.dtype, self.seed, self.revision,
-                                   self.tokenizer_revision, self.max_model_len,
-                                   self.quantization, self.enforce_eager,
-                                   self.max_context_len_to_capture, self.device)
+        model_config = ModelConfig(
+            self.model, self.tokenizer, self.tokenizer_mode,
+            self.trust_remote_code, self.download_dir, self.load_format,
+            self.dtype, self.seed, self.revision, self.tokenizer_revision,
+            self.max_model_len, self.quantization, self.enforce_eager,
+            self.max_context_len_to_capture, self.device)
         cache_config = CacheConfig(self.block_size,
                                    self.gpu_memory_utilization,
                                    self.swap_space,

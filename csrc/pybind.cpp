@@ -51,6 +51,14 @@ torch::Tensor awq_gemm_dispatch(torch::Tensor _in_feats, torch::Tensor _kernel, 
   VLLM_DISPATCH_DEVICES(_in_feats.device(), awq_gemm, _in_feats, _kernel, _scaling_factors, _zeros, split_k_iters);
 }
 
+torch::Tensor gptq_gemm_dispatch(torch::Tensor a, torch::Tensor b_q_weight, torch::Tensor b_gptq_qzeros, torch::Tensor b_gptq_scales, torch::Tensor b_g_idx, bool use_exllama) {
+  VLLM_DISPATCH_DEVICES(a.device(), gptq_gemm, a, b_q_weight, b_gptq_qzeros, b_gptq_scales, b_g_idx, use_exllama);
+}
+
+torch::Tensor gptq_shuffle_dispatch(torch::Tensor q_weight, torch::Tensor q_perm) {
+  VLLM_DISPATCH_DEVICES(q_weight.device(), gptq_shuffle, q_weight, q_perm);
+}
+
 void squeezellm_gemm_dispatch(torch::Tensor vec, torch::Tensor mat, torch::Tensor mul, torch::Tensor lookup_table) {
   VLLM_DISPATCH_DEVICES(vec.device(), squeezellm_gemm, vec, mat, mul, lookup_table);
 }
@@ -126,8 +134,8 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   // Quantization ops
   ops.def("awq_gemm", &awq_gemm_dispatch, "Quantized GEMM for AWQ");
 #endif
-  ops.def("gptq_gemm", &gptq_gemm, "Quantized GEMM for GPTQ");
-  ops.def("gptq_shuffle", &gptq_shuffle, "Post processing for GPTQ");
+  ops.def("gptq_gemm", &gptq_gemm_dispatch, "Quantized GEMM for GPTQ");
+  ops.def("gptq_shuffle", &gptq_shuffle_dispatch, "Post processing for GPTQ");
   ops.def("squeezellm_gemm", &squeezellm_gemm_dispatch, "Quantized GEMM for SqueezeLLM");
 
   // Cache ops

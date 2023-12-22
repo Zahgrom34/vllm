@@ -209,8 +209,10 @@ class ModelRunner:
 
         # When using CUDA graph, we don't need to make the tensors on the GPU
         # because they will be eventually copied to the designated GPU buffer.
-        device = "cpu" if use_captured_graph or self.device == "cpu" else "cuda"
-        pin_memory = use_captured_graph and not self.in_wsl
+        device = "cpu" if use_captured_graph or str(
+            self.device) == "cpu" else "cuda"
+        pin_memory = use_captured_graph and not self.in_wsl and str(
+            self.device) != "cpu"
         input_tokens = _make_tensor_with_pad(input_tokens,
                                              max_len=1,
                                              pad=0,
@@ -315,7 +317,10 @@ class ModelRunner:
                                             pin_memory=not self.in_wsl,
                                             device=self.device)
         categorized_sample_indices = {
-            t: _async_h2d(seq_ids, dtype=torch.int, pin_memory=not self.in_wsl, device=self.device)
+            t: _async_h2d(seq_ids,
+                          dtype=torch.int,
+                          pin_memory=not self.in_wsl,
+                          device=self.device)
             for t, seq_ids in categorized_sample_indices.items()
         }
 
@@ -566,7 +571,8 @@ def _get_graph_batch_size(batch_size: int) -> int:
 
 
 def _async_h2d(data: list, dtype, pin_memory, device):
-    t = torch.tensor(data, dtype=dtype, pin_memory=pin_memory)
-    if device == "cpu":
-        return t
-    return t.to(device="cuda", non_blocking=True)
+    if str(device) == "cpu":
+        return torch.tensor(data, dtype=dtype)
+    return torch.tensor(data, dtype=dtype,
+                        pin_memory=pin_memory).to(device="cuda",
+                                                  non_blocking=True)

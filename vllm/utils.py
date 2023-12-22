@@ -5,10 +5,6 @@ from platform import uname
 
 import psutil
 import torch
-import os
-
-from vllm._C import cuda_utils
-
 
 
 class Device(enum.Enum):
@@ -35,6 +31,7 @@ def is_hip() -> bool:
 
 
 def get_max_shared_memory_bytes(gpu: int = 0) -> int:
+    from vllm._C import cuda_utils
     """Returns the maximum shared memory per thread block in bytes."""
     # https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__TYPES.html
     cudaDevAttrMaxSharedMemoryPerBlockOptin = 97 if not is_hip() else 74
