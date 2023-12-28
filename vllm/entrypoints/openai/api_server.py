@@ -6,6 +6,8 @@ import asyncio
 import codecs
 import json
 import time
+import faulthandler
+import signal
 from http import HTTPStatus
 from typing import AsyncGenerator, Dict, List, Optional, Tuple, Union
 
@@ -715,6 +717,10 @@ async def create_completion(request: CompletionRequest, raw_request: Request):
 
 if __name__ == "__main__":
     args = parse_args()
+
+    faulthandler.enable(all_threads=True)
+    if hasattr(signal, 'SIGUSR1'):
+        faulthandler.register(signal.SIGUSR1)
 
     app.add_middleware(
         CORSMiddleware,
